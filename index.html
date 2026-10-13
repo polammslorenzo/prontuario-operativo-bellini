@@ -753,6 +753,7 @@ body{padding-bottom:82px}
     <!-- GRUPPO 1: STATO ORDINANZA (informativi) -->
     <span class="chip active">✔ IN VIGORE</span>
     <span class="chip warn">📅 29 lug – 29 nov 2026</span>
+    <span id="chip-os25" class="chip warn" title="O.S. n. 25 del 13/10/2026 — orari movida (art. 50 c. 7 TUEL)">📅 O.S. 25 · 16 ott – 16 nov</span>
     <span id="chip-countdown" class="chip warn">⏳ …</span>
     <span id="chip-op-asporto" class="chip danger" style="display:none"></span>
     <span id="chip-op-chiusura" class="chip warn" style="display:none"></span>
@@ -896,6 +897,45 @@ window.TURNO = {
 };
 
 window.TURNO.migra();window.TURNO.migra();
+
+/* ── O.S. n. 25 del 13/10/2026 — orari movida (art. 50 c. 7 TUEL) ───────
+   Si affianca alla O.S. 872/2026, non la sostituisce: in Piazza Bellini
+   resta il regime più restrittivo della 872 (art. 9 L. 447/95). La 25
+   vale per tutte le aree omogenee elencate sotto, senza tolleranza.   */
+window.OS25 = {
+  sigla:      'O.S. 25/2026',
+  estremi:    'Ordinanza Sindacale n. 25 del 13/10/2026',
+  vigenzaDal: '2026-10-16T00:00:00',
+  vigenzaAl:  '2026-11-16T23:59:59',
+  asportoStop: 0,                  // 24:00 — divieto asporto bevande alcoliche
+  asportoFine: 6*60,               // 06:00
+  chiusura: [60, 60, 60, 60, 60, 120, 180],  // dom…sab: 01:00 · ven 02:00 · sab 03:00
+  tolleranza: 0,                   // nessuna: il riordino va fatto entro l'orario
+  areeSanLorenzo: ['Via Bellini', 'Via Carlo Doria', 'Via Micco Spadaro', 'Centro Storico Antico (planimetria 3)'],
+  stato: function(now){
+    now = now || new Date();
+    var h = now.getHours();
+    var giorno = (h < 6) ? (now.getDay()+6)%7 : now.getDay();
+    var t = now.getTime();
+    return {
+      vigente:  t >= new Date(this.vigenzaDal).getTime() && t <= new Date(this.vigenzaAl).getTime(),
+      futura:   t <  new Date(this.vigenzaDal).getTime(),
+      chiusuraTxt: OS.hhmm(this.chiusura[giorno]),
+      asportoAttivo: h < 6
+    };
+  }
+};
+
+/* ── Bot Telegram dell'ufficio ─────────────────────────────────────────
+   Titoli e autorizzazioni delle attività si consultano sul bot.
+   Unico punto da toccare: lo username, senza la @.                    */
+window.TG_BOT = {
+  username: 'NOME_BOT',
+  link: function(){ return 'https://t.me/' + this.username; }
+};
+document.addEventListener('DOMContentLoaded', function(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tg-bot]'), function(a){ a.href = TG_BOT.link(); });
+});
 </script>
 
 
@@ -926,7 +966,7 @@ window.TURNO.migra();window.TURNO.migra();
 <div class="page active" id="page-home">
 
   <div class="pro-hero">
-    <div class="pro-eyebrow">O.S. 872/2026 · Piazza Bellini · vigente fino al 29 novembre 2026</div>
+    <div class="pro-eyebrow">O.S. 872/2026 · Piazza Bellini · vigente fino al 29 novembre 2026<br>O.S. 25/2026 · movida · Via Bellini, Via Carlo Doria, Via Micco Spadaro · 16 ottobre – 16 novembre 2026</div>
     <div class="pro-title">Centro operativo</div>
     <div class="pro-sub">Cosa vale adesso, cosa hai già controllato, e il passaggio diretto a verbale o relazione.</div>
     <div class="pro-status">
@@ -1054,6 +1094,27 @@ window.TURNO.migra();window.TURNO.migra();
     <div class="alert-title">ℹ Tolleranza +30 minuti</div>
     <p>I 30 minuti extra sono consentiti <strong>esclusivamente</strong> per il ricovero delle attrezzature e la pulizia degli spazi. Non è ammessa prosecuzione dell'attività commerciale.</p>
   </div>
+
+  <div class="section-label">O.S. 25/2026 — Orari movida · dal 16/10 al 16/11/2026</div>
+  <div class="alert orange">
+    <div class="alert-title">📍 Dove si applica</div>
+    <p>Esercizi di somministrazione, di vicinato, attività artigianali con preparazione di alimenti/bevande per asporto e distributori automatici. Per la U.O. San Lorenzo: <strong>Via Bellini, Via Carlo Doria, Via Micco Spadaro</strong> e il <strong>Centro Storico Antico</strong> (planimetria 3). In Piazza Bellini resta il regime più restrittivo della O.S. 872/2026.</p>
+  </div>
+  <div class="card">
+    <table class="orario-table">
+      <thead><tr><th>Giorni</th><th>Chiusura</th><th>Tolleranza</th></tr></thead>
+      <tbody>
+        <tr><td>Asporto alcolici</td><td><span class="time-big" style="color:var(--red);">24:00</span></td><td style="font-size:12px;">vietato fino alle 06:00</td></tr>
+        <tr><td>Dom – Gio</td><td><span class="time-big">01:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
+        <tr><td>Venerdì</td><td><span class="time-big">02:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
+        <tr><td>Sabato</td><td><span class="time-big">03:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert orange">
+    <div class="alert-title">⚠ Nessuna tolleranza</div>
+    <p>La O.S. 25/2026 non prevede i 30 minuti per riordino e pulizia: devono concludersi <strong>entro</strong> l'orario di chiusura.</p>
+  </div>
 </div>
 
 
@@ -1084,6 +1145,12 @@ window.TURNO.migra();window.TURNO.migra();
     <div class="alert orange" style="margin-bottom:0;">
       <p>La consegna di bevande a clienti che <strong>si allontanano dal locale o dall'area di plateatico</strong> con il bicchiere o la bottiglia, sostando o circolando sulla pubblica via.</p>
     </div>
+  </div>
+
+  <div class="section-label">O.S. 25/2026 — Divieto asporto alcolici</div>
+  <div class="alert orange">
+    <div class="alert-title">🚫 Vietato — dal 16/10 al 16/11/2026</div>
+    <p>Vendita e somministrazione per asporto di <strong>bevande alcoliche</strong> dalle <strong>24:00</strong> alle <strong>06:00</strong> del giorno seguente, tutti i giorni, in <strong>Via Bellini, Via Carlo Doria, Via Micco Spadaro</strong> e nel Centro Storico Antico (planimetria 3). Riguarda anche esercizi di vicinato, artigiani e distributori automatici.</p>
   </div>
 </div>
 
@@ -1131,6 +1198,39 @@ window.TURNO.migra();window.TURNO.migra();
     <details><summary>Art. 10 TULPS</summary><p>Testo Unico delle Leggi di Pubblica Sicurezza. Consente la sospensione dell'attività in caso di reiterazione delle violazioni.</p></details>
     <details><summary>Art. 650 c.p.</summary><p>Inosservanza dei provvedimenti dell'Autorità. Reato contravvenzionale: arresto fino a 3 mesi o ammenda fino a 206 euro.</p></details>
   </div>
+
+  <div class="norma-badge" style="margin-top:18px;">⚖️ Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026</div>
+  <div class="section-label">Sanzioni O.S. 25/2026 — orari movida</div>
+  <div class="card">
+    <div class="sanzione-row">
+      <div class="sanzione-icon">💰</div>
+      <div>
+        <div class="sanzione-label">Sanzione amministrativa</div>
+        <div class="sanzione-value">€ 25 – € 500</div>
+        <div class="pmr-badge">PMR € 50 (doppio del minimo, L. 689/81)</div>
+      </div>
+    </div>
+    <div class="sanzione-row">
+      <div class="sanzione-icon">🔒</div>
+      <div>
+        <div class="sanzione-label">Reiterazione — Sospensione, poi revoca</div>
+        <div class="sanzione-value" style="color:var(--accent2);">1 – 30 giorni</div>
+        <div class="sanzione-desc">Sospensione ai sensi dell'<strong>art. 10 TULPS</strong>; successivamente revoca del titolo.</div>
+      </div>
+    </div>
+    <div class="sanzione-row">
+      <div class="sanzione-icon">⚖️</div>
+      <div>
+        <div class="sanzione-label">Clausola di riserva</div>
+        <div class="sanzione-value">Art. 650 c.p.</div>
+        <div class="sanzione-desc">La sanzione amministrativa si applica salvo che il fatto costituisca reato.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <details><summary>Art. 50 c. 7 e art. 7-bis D.Lgs. 267/2000</summary><p>Il Sindaco coordina e riorganizza gli orari degli esercizi commerciali e dei pubblici esercizi sulla base degli indirizzi del Consiglio (Delibera C.C. n. 92 del 06/07/2026). L'art. 7-bis fissa la sanzione da € 25 a € 500 per le violazioni delle ordinanze sindacali.</p></details>
+    <details><summary>Rapporto con la O.S. 872/2026</summary><p>La O.S. 25/2026 non pregiudica né assorbe le ordinanze ex art. 9 L. 447/95. Dove vale anche la 872 (Piazza Bellini) si contesta la 872, più restrittiva.</p></details>
+  </div>
 </div>
 
 
@@ -1145,8 +1245,14 @@ window.TURNO.migra();window.TURNO.migra();
 
   <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:10px;">
     <span style="font-size:13px;flex-shrink:0;margin-top:1px;">ℹ️</span>
-    <span style="font-size:11px;color:var(--muted);line-height:1.5;">L'elenco ha carattere puramente indicativo ed è soggetto a variazioni. Ai fini del controllo fa esclusivamente fede la <strong style="color:var(--label);">perimetrazione geografica riportata nell'O.S. 872/2026</strong> e nei relativi allegati.</span>
+    <span style="font-size:11px;color:var(--muted);line-height:1.5;">L'elenco ha carattere puramente indicativo ed è soggetto a variazioni. Ai fini del controllo fa esclusivamente fede la <strong style="color:var(--label);">perimetrazione geografica riportata nell'O.S. 872/2026</strong> e nei relativi allegati. Dal 16/10 al 16/11/2026 la <strong style="color:var(--label);">O.S. 25/2026</strong> si applica anche in Via Bellini, Via Carlo Doria, Via Micco Spadaro e nel Centro Storico Antico (planimetria 3).</span>
   </div>
+
+  <a class="tg-bot" data-tg-bot href="https://t.me/NOME_BOT" target="_blank" rel="noopener">
+    <span class="tg-ic" aria-hidden="true">✈</span>
+    <span class="tg-tx"><b>Titoli e autorizzazioni sul bot Telegram</b><small>SCIA, notifiche sanitarie, dehors e scadenze si consultano sul bot dell'ufficio. Non sei iscritto? Tocca qui per aprirlo e premi Avvia.</small></span>
+    <span class="tg-go">Apri</span>
+  </a>
 
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -1535,6 +1641,12 @@ window.TURNO.migra();window.TURNO.migra();
         <option value="os_asporto">Vendita/somministrazione per asporto oltre orario (22:30)</option>
         <option value="os_apertura_feriale">Esercizio aperto oltre orario — Dom/Gio (01:00)</option>
         <option value="os_apertura_festivo">Esercizio aperto oltre orario — Ven/Sab (02:00)</option>
+      </optgroup>
+      <optgroup label="📋 O.S. 25/2026 — Orari movida">
+        <option value="os25_asporto">Asporto di bevande alcoliche oltre le 24:00</option>
+        <option value="os25_chiusura_feriale">Esercizio aperto oltre orario — Dom/Gio (01:00)</option>
+        <option value="os25_chiusura_venerdi">Esercizio aperto oltre orario — Venerdì (02:00)</option>
+        <option value="os25_chiusura_sabato">Esercizio aperto oltre orario — Sabato (03:00)</option>
       </optgroup>
       <optgroup label="🔴 Art. 689 c.p. — Minore di anni 16">
         <option value="m16_trasgr">Somministrazione da parte del trasgressore / dipendente</option>
@@ -3088,6 +3200,43 @@ I trenta minuti di tolleranza previsti dalla predetta ordinanza — destinati es
 I trenta minuti di tolleranza previsti dalla predetta ordinanza — destinati esclusivamente al ricovero delle attrezzature e alla pulizia degli spazi antistanti e interni al locale — risultavano già ampiamente decorsi al momento dell'accertamento, non essendo pertanto invocabili a giustificazione della condotta.`
     },
 
+    // ── O.S. 25/2026 — orari movida (art. 50 c. 7 TUEL) ───────────────
+    os25_asporto: {
+      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      campi:['gv-c-resp'],
+      adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
+      genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", poneva in essere la vendita e la somministrazione per asporto di bevande alcoliche oltre l'orario consentito dall'Ordinanza Sindacale n. 25 del 13/10/2026 (divieto dalle ore 24:00 alle ore 06:00 del giorno seguente), emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000 e vigente dal 16/10/2026 al 16/11/2026 nell'area omogenea interessata.
+
+${v.descAsporto ? 'In particolare: ' + v.descAsporto + '.' : "In particolare, veniva riscontrata la consegna di bevande alcoliche in bicchiere, bottiglia o altro contenitore ad avventori che si allontanavano dal locale, trattenendosi e circolando sulla pubblica via."}`
+    },
+
+    os25_chiusura_feriale: {
+      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      campi:['gv-c-resp'],
+      adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
+      genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il giorno in questione (domenica/giovedì) alle ore 01:00 dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
+
+La predetta ordinanza non prevede alcuna tolleranza: le operazioni di riordino e pulizia devono concludersi entro l'orario stabilito.`
+    },
+
+    os25_chiusura_venerdi: {
+      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      campi:['gv-c-resp'],
+      adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
+      genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il venerdì alle ore 02:00 del giorno successivo dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
+
+La predetta ordinanza non prevede alcuna tolleranza: le operazioni di riordino e pulizia devono concludersi entro l'orario stabilito.`
+    },
+
+    os25_chiusura_sabato: {
+      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      campi:['gv-c-resp'],
+      adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
+      genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il sabato alle ore 03:00 del giorno successivo dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
+
+La predetta ordinanza non prevede alcuna tolleranza: le operazioni di riordino e pulizia devono concludersi entro l'orario stabilito.`
+    },
+
     // ── MINORI < 16 ────────────────────────────────────────────────────
     m16_trasgr: {
       norma:'Art. 689 c.p.', sanzione:'Arresto fino a 1 anno', pmr:'Proc. penale – PG',
@@ -3796,6 +3945,14 @@ function safeOpen(name){
   function renderStato(){
     var st = OS.stato();
 
+    var c25 = $('chip-os25');
+    if (c25 && window.OS25){
+      var s25 = OS25.stato();
+      if (s25.futura){ c25.className='chip warn'; c25.textContent='📅 O.S. 25 dal 16 ott'; }
+      else if (s25.vigente){ c25.className='chip active'; c25.textContent='✔ O.S. 25 · chiusura '+s25.chiusuraTxt+(s25.asportoAttivo?' · stop alcol asporto':''); }
+      else { c25.className='chip danger'; c25.textContent='🔴 O.S. 25 scaduta'; }
+    }
+
     var cd = $('chip-countdown');
     if (cd){
       if (!st.giorniResidui){ cd.className='chip danger'; cd.textContent='🔴 Ordinanza scaduta'; }
@@ -4112,6 +4269,7 @@ function safeOpen(name){
   });
   var ORDINE = [
     ['Ordinanza Sindacale 872/2026', ['os_asporto', 'os_apertura_feriale', 'os_apertura_festivo']],
+    ['Ordinanza Sindacale 25/2026 — orari movida', ['os25_asporto', 'os25_chiusura_feriale', 'os25_chiusura_venerdi', 'os25_chiusura_sabato']],
     ['Tutela dei minori', ['m16_trasgr', 'm16_titolare', 'm16_entrambi', 'm16_distr', 'm18_prima', 'm18_reiter']],
     ['Orari di vendita e somministrazione di alcol',
       ['orario_distr', 'orario_spazio_pub', 'orario_vicinato', 'orario_alimentare', 'orario_pubblico', 'orario_circolo']]
@@ -4828,6 +4986,16 @@ else setTimeout(avvia, 120);
 .anaPlan a:hover{background:rgba(155,89,182,.22);border-color:var(--purple)}
 @media(max-width:430px){.anaPlan{grid-template-columns:36px 1fr}.anaPlan .ic{width:36px;height:36px}
   .anaPlan a{grid-column:1/-1;width:100%;box-sizing:border-box}}
+.tg-bot{display:grid;grid-template-columns:40px 1fr auto;gap:11px;align-items:center;text-decoration:none;
+  border:1px solid rgba(42,171,238,.45);background:rgba(42,171,238,.09);border-radius:10px;
+  padding:11px 12px;margin-bottom:10px;color:var(--text)}
+.tg-bot:hover{background:rgba(42,171,238,.17);border-color:#2aabee}
+.tg-bot .tg-ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#2aabee;color:#fff;font-size:19px}
+.tg-bot .tg-tx b{display:block;font-family:'IBM Plex Sans Condensed',sans-serif;font-size:14px;font-weight:600;line-height:1.25}
+.tg-bot .tg-tx small{display:block;font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+.tg-bot .tg-go{border:1px solid rgba(42,171,238,.6);color:#2aabee;border-radius:8px;padding:7px 12px;
+  font-family:'IBM Plex Sans Condensed',sans-serif;font-size:12px;font-weight:600;white-space:nowrap}
 .anaBg{font-family:'IBM Plex Sans Condensed',sans-serif;font-size:9.5px;letter-spacing:.13em;
   text-transform:uppercase;padding:1px 7px;border-radius:4px;border:1px solid}
 .anaBg.v{color:var(--green);border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.1)}
@@ -4922,7 +5090,7 @@ else setTimeout(avvia, 120);
       var s = scheda(nome);
       it.setAttribute('data-nome', nome);
       it.setAttribute('data-sch', s ? '1' : '0');
-      if(s) it.setAttribute('data-tit', (s.titoli||[]).length + ' tit.' + (s.planimetria ? ' · plan.' : ''));
+      if(s) it.setAttribute('data-tit', s.planimetria ? 'plan.' : 'scheda');
     });
   }
 
@@ -4975,18 +5143,12 @@ else setTimeout(avvia, 120);
       var res = [a.res_comune, [a.res_indirizzo, a.res_civico].filter(Boolean).join(' ')].filter(Boolean).join(', ');
       h += '<div class="ana2">' + rigo('Nato/a', nat) + rigo('Residenza', res) + '</div>';
     }
-    var T = a.titoli || [];
-    h += '<div class="anaS">Titoli <span style="font-family:var(--mono);font-size:11px;letter-spacing:0">'+T.length+'</span></div>';
-    if(!T.length) h += '<div style="font-size:13px;color:var(--muted)">Nessun titolo registrato in archivio.</div>';
-    T.forEach(function(t){
-      var v = validita(t);
-      h += '<div class="anaT"><div class="n">'+esc(t.tipo)+'</div><div class="d">'
-        + '<span>'+esc(t.numero||'\u2014')+'</span>'
-        + (t.rilascio ? '<span>'+itaData(t.rilascio)+'</span>' : '')
-        + (t.esito_suap ? '<span class="anaBg v">'+esc(t.esito_suap)+'</span>' : '')
-        + '<span class="anaBg '+v.c+'">'+v.t+'</span></div>'
-        + (t.note ? '<div class="no">'+esc(t.note)+'</div>' : '') + '</div>';
-    });
+    h += '<div class="anaS">Titoli</div>'
+      + '<a class="tg-bot" href="'+esc(TG_BOT.link())+'" target="_blank" rel="noopener">'
+      + '<span class="tg-ic" aria-hidden="true">\u2708</span>'
+      + '<span class="tg-tx"><b>Consulta i titoli sul bot Telegram</b>'
+      + '<small>SCIA, notifiche, dehors e scadenze aggiornati. Prima volta? Apri il bot e premi Avvia per iscriverti.</small></span>'
+      + '<span class="tg-go">Apri</span></a>';
     if(a.planimetria && a.planimetria.file){
       var p = a.planimetria;
       h += '<div class="anaS">Planimetria</div><div class="anaPlan">'

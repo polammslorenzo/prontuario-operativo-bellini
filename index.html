@@ -637,6 +637,20 @@ body{padding-bottom:82px}
 .ultra-live.amber .ultra-live-main{color:var(--accent)}
 .ultra-live.green{border-color:rgba(53,201,121,.42)}
 .ultra-live.grey{border-color:var(--border)}
+.header{position:sticky;top:0;z-index:7000}
+.header .header-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.hdr-ico{font-size:26px;line-height:1;flex-shrink:0}
+.hdr-stato{display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--border);background:rgba(255,255,255,.04);
+  border-radius:9px;padding:7px 11px;cursor:pointer;font:700 12px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;color:var(--text);text-align:left}
+.hdr-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.hdr-zona{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-weight:600}
+.hdr-fase{flex-shrink:0;letter-spacing:.8px;text-transform:uppercase}
+.hdr-stato.green{border-color:rgba(63,185,80,.45)} .hdr-stato.green .hdr-dot{background:var(--green)} .hdr-stato.green .hdr-fase{color:var(--green)}
+.hdr-stato.amber{border-color:rgba(227,160,8,.5)}  .hdr-stato.amber .hdr-dot{background:var(--accent)} .hdr-stato.amber .hdr-fase{color:var(--accent)}
+.hdr-stato.red{border-color:rgba(248,81,73,.55);background:rgba(248,81,73,.08)} .hdr-stato.red .hdr-dot{background:var(--red)} .hdr-stato.red .hdr-fase{color:var(--red)}
+.hdr-stato.grey .hdr-fase{color:var(--muted)}
+.ultra-primary.due{grid-template-columns:1fr 1fr}
+.ultra-menu-sez{grid-column:1/-1;font:800 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:8px 2px 0}
 .ultra-live.grey .ultra-live-main{color:var(--muted)}
 .zona-pick{display:block;margin-bottom:8px}
 .zona-pick .zona-k{display:block;font:800 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:2.4px;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
@@ -746,47 +760,18 @@ body{padding-bottom:82px}
 <!-- ═══════════════════ HEADER ═══════════════════ -->
 <div class="header">
   <div class="header-top">
-    <span style="font-size:38px;line-height:1;flex-shrink:0;">🛡️</span>
+    <span class="hdr-ico" aria-hidden="true">🛡️</span>
     <div>
-      <div class="header-org" style="font-size:12px;letter-spacing:1.5px;color:#b8c4d8;font-weight:600;">Polizia Municipale Napoli · U.O. San Lorenzo · Polizia Amministrativa · Ideato da A.C. FERRARA</div>
+      <div class="header-org">Polizia Municipale Napoli · U.O. San Lorenzo</div>
       <div class="header-title">Prontuario Operativo</div>
-      <div class="header-sub" style="font-weight:600;color:#f5a623;letter-spacing:1.5px;font-size:13px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;">
-        <span>Piazza Bellini e zone limitrofe</span>
-        <span id="chip-neon-asporto" style="display:none;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:20px;padding:3px 10px;border:1.5px solid #ff4444;color:#ff4444;background:rgba(255,68,68,0.08);text-shadow:0 0 8px rgba(255,68,68,0.8);box-shadow:0 0 12px rgba(255,68,68,0.45);">🚫 STOP ASPORTO</span>
-        <span id="chip-neon-chiusura" style="display:none;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:20px;padding:3px 10px;border:1.5px solid #2ecc71;color:#2ecc71;background:rgba(46,204,113,0.08);text-shadow:0 0 8px rgba(46,204,113,0.8);box-shadow:0 0 12px rgba(46,204,113,0.4);">🔒 CHIUDE</span>
-      </div>
     </div>
   </div>
-  <div class="validity-bar">
-
-    <!-- GRUPPO 1: STATO ORDINANZA (informativi) -->
-    <span class="chip active">✔ IN VIGORE</span>
-    <span class="chip warn">📅 29 lug – 29 nov 2026</span>
-    <span id="chip-os25" class="chip warn" title="O.S. n. 25 del 13/10/2026 — orari movida (art. 50 c. 7 TUEL)">📅 O.S. 25 · 16 ott – 16 nov</span>
-    <span id="chip-countdown" class="chip warn">⏳ …</span>
-    <span id="chip-op-asporto" class="chip danger" style="display:none"></span>
-    <span id="chip-op-chiusura" class="chip warn" style="display:none"></span>
-
-    <!-- GRUPPO 2: STRUMENTI OPERATIVI (cliccabili) -->
-
-    <span onclick="switchTab('relazione');window.scrollTo(0,0);"
-      style="cursor:pointer;border-radius:20px;padding:5px 15px;font-size:12px;letter-spacing:.5px;
-      display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-weight:800;
-      border:1.5px solid rgba(46,204,113,0.6);color:var(--green);background:rgba(46,204,113,0.09);
-      transition:background .2s;box-shadow:0 0 6px rgba(46,204,113,0.12);"
-      onmouseover="this.style.background='rgba(46,204,113,0.2)'"
-      onmouseout="this.style.background='rgba(46,204,113,0.09)'">
-      📝 Relazione
-    </span>
-
-
-
-
-    <!-- GRUPPO 3: CHIP NOTTURNI (si accendono la sera) -->
-    <span class="chip" style="border:1px solid rgba(46,204,113,0.4);color:#2ecc71;background:rgba(46,204,113,0.07);">✍️ Verbali generabili</span>
-    <!-- chip operativi: nascosti di default, compaiono solo quando serve -->
-  </div>
-</div><!-- /.header : chiusura assente nel file di partenza; senza di essa tutte le pagine restavano annidate dentro l'intestazione -->
+  <button type="button" id="hdr-stato" class="hdr-stato grey" onclick="ultraNav('home', document.querySelector('.ultra-navbtn'))">
+    <span class="hdr-dot" aria-hidden="true"></span>
+    <span class="hdr-zona" id="hdr-zona">—</span>
+    <span class="hdr-fase" id="hdr-fase">—</span>
+  </button>
+</div>
 
 <script>
 /* ══════════════════════════════════════════════════════════════════════
@@ -1018,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 
 
-<div style="background:#0b1220;border-bottom:1px solid #263752;padding:5px 14px;font:700 9px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#91a0b7;text-align:center;">Prontuario Operativo Piazza Bellini</div>
+
 
 <!-- ═══════════════════ TABS ═══════════════════ -->
 <div class="tabs-wrapper"><div class="tabs">
@@ -1066,13 +1051,11 @@ document.addEventListener('DOMContentLoaded', function(){
     <div class="ultra-live-sub" id="ultra-live-sub">Lettura dell'orario in corso…</div>
   </div>
 
-  <div class="ultra-primary">
+  <div class="ultra-primary due">
     <button class="ultra-big primary" onclick="ultraOpenControl()">
       <span class="bi">✚</span><span><b>Nuovo controllo</b><small>Registra l'esito in dieci secondi.</small></span></button>
-    <button class="ultra-big" onclick="safeOpen('generatore')">
-      <span class="bi">✍️</span><span><b>Genera verbale</b><small>Fattispecie guidate, testo pronto da copiare.</small></span></button>
-    <button class="ultra-big" onclick="slPortaInRelazione()">
-      <span class="bi">📝</span><span><b>Compila relazione</b><small>Porta i controlli del turno nel Mod. BEL/872.</small></span></button>
+    <button class="ultra-big" onclick="safeOpen('guidato');window.scrollTo(0,0)">
+      <span class="bi">🧭</span><span><b>Controllo guidato</b><small>Dici cosa vedi, propone la fattispecie.</small></span></button>
   </div>
 
   <div class="ultra-counter">
@@ -1089,34 +1072,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <span class="kbd">CERCA</span>
   </div>
 
-  <div class="section-label">Schede</div>
-  <div class="ultra-quick">
-    <button class="ultra-q" onclick="safeOpen('orari')"><span>⏰</span>Orari</button>
-    <button class="ultra-q" onclick="safeOpen('minori')"><span>🚸</span>Minori</button>
-    <button class="ultra-q" onclick="safeOpen('impatto')"><span>🎵</span>Acustico</button>
-    <button class="ultra-q" onclick="safeOpen('dehors')"><span>☂️</span>Dehors</button>
-    <button class="ultra-q" onclick="safeOpen('rpsu16')"><span>🧹</span>R.P.S.U.</button>
-    <button class="ultra-q" onclick="safeOpen('artestrada')"><span>🎭</span>Arte</button>
-    <button class="ultra-q" onclick="safeOpen('scia')"><span>📋</span>SCIA</button>
-  </div>
 
-  <div id="pro-guidato" class="section-label">Controllo guidato</div>
-  <div class="pro-panel">
-    <label class="pro-label" for="pro-case">Cosa hai riscontrato?</label>
-    <select id="pro-case" class="pro-select" onchange="proGuide()">
-      <option value="">— Seleziona il fatto —</option>
-      <option value="asporto">Asporto di bevande oltre l'orario</option>
-      <option value="chiusura">Locale aperto oltre l'orario di chiusura</option>
-      <option value="min16">Somministrazione di alcol a minore di 16 anni</option>
-      <option value="min18">Vendita/somministrazione alcol a minore 16–18 anni</option>
-      <option value="acustico">Musica / impatto acustico</option>
-      <option value="dehors">Occupazione suolo / dehors</option>
-      <option value="rpsu">Rifiuti / pulizia area esterna</option>
-      <option value="arte">Artista di strada</option>
-      <option value="scia">Verifica SCIA / titolo attività</option>
-    </select>
-    <div id="pro-guide-result" class="pro-result"></div>
-  </div>
 
   <div class="section-label">Registro del turno</div>
   <div class="pro-panel">
@@ -3788,7 +3744,7 @@ Ai sensi dell'art. 9, comma 2, del Regolamento Arte di Strada si disponeva altre
     © A.C. Ferrara · Prontuario Operativo v1.6 · 2026
   </div>
   <div style="font-size:11.5px;color:var(--muted);line-height:1.8;max-width:600px;margin:0 auto;">
-    <span style="display:inline-block;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:5px;padding:4px 10px;margin-bottom:8px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);">O.S. 872/2026 del 29/07/2026 · validità 29 lug – 29 nov 2026</span><br>
+    <span style="display:inline-block;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:5px;padding:4px 10px;margin-bottom:8px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);">O.S. 872/2026 del 29/07/2026 · validità 29 lug – 29 nov 2026</span><br><span style="display:inline-block;background:rgba(42,171,238,0.08);border:1px solid rgba(42,171,238,0.3);border-radius:5px;padding:4px 10px;margin-bottom:8px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);">O.S. 25/2026 del 13/10/2026 · validità 16 ott – 16 nov 2026</span><br>
     Sebbene ideato per l'O.S., può costituire <strong style="color:var(--text);">strumento operativo di riferimento</strong> anche per i servizi generali di <strong style="color:var(--text);">controllo della movida</strong>.<br><br>
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px;">
       <span style="font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">L.R. Campania 7/2020</span>
@@ -3846,20 +3802,21 @@ Ai sensi dell'art. 9, comma 2, del Regolamento Arte di Strada si disponeva altre
   <div class="ultra-sheet">
     <div class="ultra-sheet-head"><div class="ultra-sheet-title">Altri strumenti</div><button class="ultra-close" onclick="ultraCloseMore()">CHIUDI</button></div>
     <div class="ultra-menu-grid">
-      <button class="ultra-menu" onclick="ultraMenuGo('orari')"><span>⏰</span>Orari O.S. 872</button>
+      <div class="ultra-menu-sez">Regole delle ordinanze</div>
+      <button class="ultra-menu" onclick="ultraMenuGo('orari')"><span>⏰</span>Orari</button>
       <button class="ultra-menu" onclick="ultraMenuGo('divieti')"><span>🚫</span>Divieti</button>
       <button class="ultra-menu" onclick="ultraMenuGo('sanzioni')"><span>⚖️</span>Sanzioni</button>
-      <button class="ultra-menu" onclick="ultraMenuGo('attivita')"><span>📍</span>Attività</button>
+      <div class="ultra-menu-sez">Schede</div>
       <button class="ultra-menu" onclick="ultraMenuGo('minori')"><span>🚸</span>Minori</button>
       <button class="ultra-menu" onclick="ultraMenuGo('scia')"><span>📋</span>SCIA</button>
       <button class="ultra-menu" onclick="ultraMenuGo('impatto')"><span>🎵</span>Acustico</button>
       <button class="ultra-menu" onclick="ultraMenuGo('dehors')"><span>☂️</span>Dehors</button>
       <button class="ultra-menu" onclick="ultraMenuGo('rpsu16')"><span>🧹</span>R.P.S.U.</button>
       <button class="ultra-menu" onclick="ultraMenuGo('artestrada')"><span>🎭</span>Arte di strada</button>
-      <button class="ultra-menu" onclick="proOpenSearch();ultraCloseMore()"><span>⌕</span>Ricerca globale</button>
+      <div class="ultra-menu-sez">Strumenti</div>
+      <button class="ultra-menu" onclick="ultraMenuGo('guidato')"><span>🧭</span>Controllo guidato</button>
+      <button class="ultra-menu" onclick="proOpenSearch();ultraCloseMore()"><span>⌕</span>Ricerca</button>
       <button class="ultra-menu" onclick="ultraTogglePatrol();ultraCloseMore()"><span>🚓</span>Modalità pattuglia</button>
-      <button class="ultra-menu" onclick="ultraOpenControl();ultraCloseMore()"><span>✚</span>Nuovo controllo</button>
-      <button class="ultra-menu" onclick="slPortaInRelazione();ultraCloseMore()"><span>📝</span>Compila relazione</button>
     </div>
     <div class="ultra-brandline" style="margin-top:12px;text-align:center;">Ideato da <strong>A.C. FERRARA</strong></div>
   </div>
@@ -3910,54 +3867,6 @@ function safeOpen(name){
 /* ══════════ V17 PRO — strato aggiuntivo, non sostituisce il motore base ══════════ */
 (function(){
   var PRO_LOG_KEY='bellini872_pro_log_v17';
-
-  window.proScrollGuidato=function(){
-    var el=document.getElementById('pro-guidato'); if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-  };
-
-  var guide={
-    asporto:{title:'O.S. 872/2026 — Prescrizione A',text:'Verifica consegna di bevande per asporto dopo le 22:30. Il generatore dispone già della fattispecie dedicata.',meta:'Percorso: Verbale → O.S. 872 → asporto oltre orario',tab:'generatore',preset:'os_asporto'},
-    chiusura:{title:'O.S. 872/2026 — Prescrizione B',text:'Verifica giorno commerciale, orario di chiusura e i 30 minuti ammessi esclusivamente per pulizia/ricovero attrezzature.',meta:'Dom–Gio 01:00 · Ven–Sab 02:00',tab:'generatore',preset:'AUTO_CLOSE'},
-    min16:{title:'Minore di anni 16',text:'Apri il percorso minori e scegli la posizione del trasgressore/titolare prima di generare la contestazione.',meta:'Percorso dedicato MINORI + generatore verbale',tab:'minori'},
-    min18:{title:'Minore tra 16 e 18 anni',text:'Verifica età e richiesta del documento; nel generatore sono disponibili prima violazione e reiterazione.',meta:'Art. 14-ter L. 125/2001',tab:'generatore',preset:'m18_prima'},
-    acustico:{title:'Impatto acustico / musica',text:'Apri la scheda acustico per distinguere titolo, fattispecie e dicitura di verbalizzazione.',meta:'Scheda operativa ACUSTICO',tab:'impatto'},
-    dehors:{title:'Occupazione suolo / dehors',text:'Apri la scheda dedicata per descrizione, difformità e testo operativo.',meta:'Scheda operativa DEHORS',tab:'dehors'},
-    rpsu:{title:'Pulizia / rifiuti esterni',text:'Apri la sezione R.P.S.U. per la fattispecie applicabile e il relativo testo.',meta:'Regolamento di Polizia Urbana',tab:'rpsu16'},
-    arte:{title:'Arte di strada',text:'Apri il modulo dedicato e seleziona la fattispecie riscontrata.',meta:'Disciplina comunale arte di strada',tab:'artestrada'},
-    scia:{title:'SCIA / titolo abilitativo',text:'Apri la sezione SCIA per individuare il percorso amministrativo pertinente.',meta:'Scheda operativa SCIA',tab:'scia'}
-  };
-
-  window.proGuide=function(){
-    var key=document.getElementById('pro-case').value, box=document.getElementById('pro-guide-result');
-    if(!box)return;
-    if(!key||!guide[key]){box.style.display='none';box.innerHTML='';return;}
-    var g=guide[key];
-    if(key==='asporto'||key==='chiusura'){
-      var st=OS.stato(); g=Object.assign({},g);
-      if(st.nessuna){ g.title=st.zona.nome; g.text=st.dettaglio; g.meta='Nessuna fattispecie di ordinanza applicabile in questa strada'; }
-      else if(key==='asporto'){ g.title=st.fonteAsporto+' — asporto'; g.text='Verifica consegna di bevande '+st.bevande+' per asporto dopo le '+st.asportoTxt+' in '+st.zona.nome+'.'; g.meta='Divieto '+st.asportoTxt+' – 06:00'; }
-      else { g.title=st.fonteChiusura+' — chiusura'; g.text='Stasera in '+st.zona.nome+' la chiusura è alle '+st.chiusuraTxt+(st.tolleranza?', con '+st.tolleranza+' minuti solo per pulizia e ricovero attrezzature.':', senza tolleranza.'); g.meta='Fattispecie proposta in base al giorno'; }
-    }
-    box.style.display='block';
-    box.innerHTML='<div class="pro-result-title">'+g.title+'</div><div>'+g.text+'</div><div class="pro-result-meta">'+g.meta+'</div><button class="pro-go" onclick="proGuideGo(\''+key+'\')">Apri percorso →</button>';
-  };
-
-  window.proGuideGo=function(key){
-    var g=guide[key]; if(!g)return;
-    safeOpen(g.tab);
-    setTimeout(function(){
-      if(g.tab==='generatore' && g.preset){
-        var sel=document.getElementById('gv-sel');
-        if(sel){
-          var preset=g.preset, st=OS.stato();
-          if(key==='asporto') preset=st.nessuna?'':st.fattAsporto;
-          if(preset==='AUTO_CLOSE') preset=st.nessuna?'':st.fattChiusura;
-          sel.value=preset;
-          if(typeof gvOnChange==='function')gvOnChange();
-        }
-      }
-    },80);
-  };
 
   var searchBase=[
     ['Orari O.S. 872','22:30 01:00 02:00 tolleranza chiusura riapertura','orari'],
@@ -4079,11 +3988,20 @@ function safeOpen(name){
     var zr = $('zona-regimi');
     if (zr){
       var badge = st.regimi.map(function(r){
-        return '<span class="zona-reg" style="color:'+r.colore+';border-color:'+r.colore+'">✔ '+r.sigla+' · fino al '+OS.ddmm(r.vigenzaAl)+'</span>';
+        var gg = Math.max(0, Math.ceil((new Date(r.vigenzaAl) - adesso)/86400000));
+        return '<span class="zona-reg" style="color:'+r.colore+';border-color:'+r.colore+'">✔ '+r.sigla+' · fino al '+OS.ddmm(r.vigenzaAl)+' · '+gg+' gg</span>';
       }).concat(st.prossimi.map(function(r){
         return '<span class="zona-reg off">'+r.sigla+' · dal '+OS.ddmm(r.vigenzaDal)+'</span>';
       }));
       zr.innerHTML = badge.length ? badge.join('') : '<span class="zona-reg off">Nessuna ordinanza sugli orari</span>';
+    }
+
+    var hs = $('hdr-stato');
+    if (hs){
+      hs.className = 'hdr-stato ' + st.livello;
+      $('hdr-zona').textContent = '📍 ' + st.zona.nome;
+      $('hdr-fase').textContent = st.nessuna ? 'nessuna ordinanza'
+        : st.titolo.toLowerCase() + (st.asportoAttivo && st.fase !== 'fuori-orario' ? ' · chiude ' + st.chiusuraTxt : '');
     }
 
     var cd = $('chip-countdown');
@@ -4796,16 +4714,17 @@ function renderFascia(){
   var f = fase(), box = document.getElementById('cg-fascia');
   if (!box) return;
   if (!f){ box.innerHTML = ''; return; }
-  var col = f.livello === 'red' ? 'var(--red)' : f.livello === 'amber' ? 'var(--accent)' : 'var(--green)';
+  var col = f.livello === 'red' ? 'var(--red)' : f.livello === 'amber' ? 'var(--accent)' : f.livello === 'grey' ? 'var(--border)' : 'var(--green)';
+  var info = f.nessuna ? esc2(f.dettaglio)
+    : 'Ore ' + esc2(f.ora) + ' · ' + esc2(f.zona.nome) + ' · asporto ' + esc2(f.asportoTxt) + ' · chiusura ' + esc2(f.chiusuraTxt) +
+      (f.tolleranza ? ' · tolleranza fino a ' + esc2(f.tolleranzaTxt) : ' · senza tolleranza') + ' · ' + esc2(f.fonteChiusura);
   box.innerHTML =
     '<div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid ' + col +
     ';border-radius:10px;padding:12px 14px;">' +
       '<span style="font-size:20px;">' + f.icona + '</span>' +
       '<div style="flex:1;min-width:0;">' +
         '<div style="font-family:\'IBM Plex Sans Condensed\',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;color:' + col + ';">' + esc2(f.titolo) + '</div>' +
-        '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;">Ore ' + esc2(f.ora) +
-          ' · chiusura ' + esc2(f.chiusuraTxt) + ' · tolleranza fino a ' + esc2(f.tolleranzaTxt) +
-          (f.weekend ? ' · regime ven/sab' : ' · regime dom/gio') + '</div>' +
+        '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;">' + info + '</div>' +
       '</div>' +
     '</div>';
 }

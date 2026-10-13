@@ -1,0 +1,11 @@
+{
+  "name": "prontuario-operativo-bellini",
+  "private": true,
+  "description": "Prontuario operativo U.O. San Lorenzo — prove automatiche del motore orario",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -636,6 +636,15 @@ body{padding-bottom:82px}
 .ultra-live.amber{border-color:rgba(240,173,50,.5)}
 .ultra-live.amber .ultra-live-main{color:var(--accent)}
 .ultra-live.green{border-color:rgba(53,201,121,.42)}
+.ultra-live.grey{border-color:var(--border)}
+.ultra-live.grey .ultra-live-main{color:var(--muted)}
+.zona-pick{display:block;margin-bottom:8px}
+.zona-pick .zona-k{display:block;font:800 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:2.4px;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.zona-pick select{width:100%;appearance:none;-webkit-appearance:none;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 14px center;
+  border:1.5px solid var(--accent);border-radius:10px;padding:12px 40px 12px 14px;font:700 16px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;color:var(--text);cursor:pointer}
+.zona-regimi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.zona-reg{font:700 10.5px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:.8px;text-transform:uppercase;border-radius:6px;padding:3px 8px;border:1px solid}
+.zona-reg.off{color:var(--muted);border-color:var(--border)}
 .ultra-live.green .ultra-live-main{color:var(--green)}
 .ultra-shiftbar{
   display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);
@@ -786,40 +795,137 @@ body{padding-bottom:82px}
    punti diversi del file. Qui c'è un solo posto da toccare: OS.
    Alla prossima ordinanza si aggiorna questo oggetto e basta.
    ══════════════════════════════════════════════════════════════════════ */
+/* Ogni ordinanza è un REGIME; ogni strada (ZONE) dice quali regimi valgono lì.
+   Alla prossima ordinanza: si aggiunge un regime e lo si assegna alle strade.
+   Se in una strada valgono più regimi, per ogni regola vince il più restrittivo. */
+window.REGIMI = {
+  os872: {
+    sigla:'O.S. 872/2026', colore:'#f5a623',
+    vigenzaDal:'2026-07-29T00:00:00', vigenzaAl:'2026-11-29T23:59:59',
+    asportoStop: 22*60 + 30,           // 22:30
+    bevande:'alcoliche e analcoliche',
+    chiusura:[60, 60, 60, 60, 60, 120, 120],   // dom…sab, minuti dopo mezzanotte
+    tolleranza: 30,                    // solo pulizia e ricovero attrezzature
+    norma:'Art. 9 L. 447/95', sanzione:'€ 2.000 – € 20.000',
+    fattAsporto:'os_asporto',
+    fattChiusura:function(g){ return (g === 5 || g === 6) ? 'os_apertura_festivo' : 'os_apertura_feriale'; }
+  },
+  os25: {
+    sigla:'O.S. 25/2026', colore:'#2aabee',
+    vigenzaDal:'2026-10-16T00:00:00', vigenzaAl:'2026-11-16T23:59:59',
+    asportoStop: 24*60,                // 24:00
+    bevande:'alcoliche',
+    chiusura:[60, 60, 60, 60, 60, 120, 180],   // ven 02:00 · sab 03:00
+    tolleranza: 0,                     // riordino e pulizia entro l'orario
+    norma:'Art. 7-bis TUEL', sanzione:'€ 25 – € 500',
+    fattAsporto:'os25_asporto',
+    fattChiusura:function(g){ return g === 6 ? 'os25_chiusura_sabato' : g === 5 ? 'os25_chiusura_venerdi' : 'os25_chiusura_feriale'; }
+  }
+};
+
+window.ZONE = [
+  { id:'bellini',        nome:'Piazza Bellini',                  gruppo:'O.S. 872/2026 — Piazza Bellini', regimi:['os872'] },
+  { id:'costantinopoli', nome:'Via S. Maria di Costantinopoli',  gruppo:'O.S. 872/2026 — Piazza Bellini', regimi:['os872'] },
+  { id:'maiella',        nome:'Via San Pietro a Maiella',        gruppo:'O.S. 872/2026 — Piazza Bellini', regimi:['os872'] },
+  { id:'portalba',       nome:"Via Port'Alba",                   gruppo:'O.S. 872/2026 — Piazza Bellini', regimi:['os872'] },
+  { id:'sansebastiano',  nome:'Via San Sebastiano',              gruppo:'O.S. 872/2026 — Piazza Bellini', regimi:['os872'] },
+  { id:'viabellini',     nome:'Via Bellini',                     gruppo:'O.S. 25/2026 — Movida',          regimi:['os25'] },
+  { id:'doria',          nome:'Via Carlo Doria',                 gruppo:'O.S. 25/2026 — Movida',          regimi:['os25'] },
+  { id:'spadaro',        nome:'Via Micco Spadaro',               gruppo:'O.S. 25/2026 — Movida',          regimi:['os25'] },
+  { id:'centrostorico',  nome:'Altra strada del Centro Storico Antico (plan. 3)', gruppo:'O.S. 25/2026 — Movida', regimi:['os25'] },
+  { id:'fuori',          nome:'Fuori dalle aree delle ordinanze', gruppo:'Altro',                         regimi:[] }
+];
+
 window.OS = {
+  /* valori della O.S. 872 tenuti qui per compatibilità */
   sigla:        'O.S. 872/2026',
   luogo:        'Piazza Bellini',
   vigenzaAl:    '2026-11-29T23:59:59',
-  asportoStop:  22*60 + 30,        // 22:30 — divieto di asporto bevande
-  asportoFine:   6*60,             // 06:00 — cessa il divieto
+  asportoStop:  22*60 + 30,
+  asportoFine:   6*60,             // 06:00 — cessa il divieto (uguale per tutti i regimi)
   preavviso:    30,                // minuti di preavviso sugli avvisi
-  chiusuraFer:  60,                // 01:00 (min dopo mezzanotte) — dom/gio
-  chiusuraWknd: 120,               // 02:00 — ven/sab
-  tolleranza:   30,                // solo pulizia e ricovero attrezzature
+  chiusuraFer:  60,
+  chiusuraWknd: 120,
+  tolleranza:   30,
+  KEY: 'prontuario_zona',
 
   hhmm: function(min){ min=((min%1440)+1440)%1440; return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0'); },
+  ddmm: function(iso){ var p = iso.slice(0,10).split('-'); return p[2]+'/'+p[1]; },
 
-  /* Unico motore orario del prontuario. */
-  stato: function(now){
+  zonaId: function(){
+    if (this._zona) return this._zona;
+    try { var v = localStorage.getItem(this.KEY); if (v) return v; } catch(e){}
+    return 'bellini';
+  },
+  zona: function(id){
+    id = id || this.zonaId();
+    for (var k = 0; k < ZONE.length; k++) if (ZONE[k].id === id) return ZONE[k];
+    return ZONE[0];
+  },
+  setZona: function(id){
+    this._zona = id;
+    try { localStorage.setItem(this.KEY, id); } catch(e){}
+    if (window.renderStato) window.renderStato();
+  },
+  vigente: function(r, now){
+    var t = now.getTime();
+    return t >= new Date(r.vigenzaDal).getTime() && t <= new Date(r.vigenzaAl).getTime();
+  },
+
+  /* regole in vigore in una strada a un dato momento: per ogni regola il regime più restrittivo */
+  regola: function(now, z, giorno){
+    var self = this, R = { regimi:[], prossimi:[] };
+    z.regimi.forEach(function(id){
+      var r = REGIMI[id]; if (!r) return;
+      if (self.vigente(r, now)) R.regimi.push(r);
+      else if (now.getTime() < new Date(r.vigenzaDal).getTime()) R.prossimi.push(r);
+    });
+    R.regimi.forEach(function(r){
+      if (!R.fonteAsporto || r.asportoStop < R.fonteAsporto.asportoStop) R.fonteAsporto = r;
+      var c = r.chiusura[giorno], f = R.fonteChiusura;
+      if (!f || c < f.chiusura[giorno] || (c === f.chiusura[giorno] && r.tolleranza < f.tolleranza)) R.fonteChiusura = r;
+    });
+    return R;
+  },
+
+  /* Unico motore orario del prontuario. zona facoltativa: se manca, quella scelta in home. */
+  stato: function(now, zonaId){
     now = now || new Date();
     var h = now.getHours(), m = now.getMinutes(), mins = h*60+m;
     /* giorno commerciale: dopo mezzanotte vale la sera precedente */
     var giorno = (h < 6) ? (now.getDay()+6)%7 : now.getDay();
-    var wknd   = (giorno === 5 || giorno === 6);
-    var lim    = wknd ? this.chiusuraWknd : this.chiusuraFer;
-    var norm   = (h < 6) ? mins+1440 : mins;
-    var L      = 1440 + lim, T = L + this.tolleranza;
-    var st = {
-      ora: this.hhmm(mins),
-      weekend: wknd,
-      chiusuraTxt:   this.hhmm(lim),
-      tolleranzaTxt: this.hhmm(lim + this.tolleranza),
-      asportoAttivo: (mins >= this.asportoStop || h < 6)
-    };
-    if (norm > T){
+    var z = this.zona(zonaId), R = this.regola(now, z, giorno);
+    var st = { ora: this.hhmm(mins), weekend: (giorno === 5 || giorno === 6), giorno: giorno,
+               zona: z, regimi: R.regimi, prossimi: R.prossimi };
+
+    if (!R.regimi.length){
+      st.nessuna = true; st.fase = 'nessuna'; st.livello = 'grey'; st.icona = '–';
+      st.titolo = 'NESSUNA ORDINANZA';
+      st.dettaglio = (z.regimi.length ? 'In ' + z.nome : 'Qui') + ' adesso non vale nessuna ordinanza sugli orari. Restano i limiti generali di legge sull\'alcol (scheda Minori → Orari alcol).'
+        + (R.prossimi.length ? ' La ' + R.prossimi[0].sigla + ' entra in vigore il ' + this.ddmm(R.prossimi[0].vigenzaDal) + '.' : '');
+      st.asportoAttivo = false; st.asportoTxt = '—'; st.chiusuraTxt = '—'; st.tolleranzaTxt = '—';
+      st.giorniResidui = 0;
+      return st;
+    }
+
+    var A = R.fonteAsporto, C = R.fonteChiusura;
+    var stop = A.asportoStop, lim = C.chiusura[giorno], tol = C.tolleranza;
+    var norm = (h < 6) ? mins+1440 : mins;
+    var L = 1440 + lim, T = L + tol;
+    st.asportoTxt    = stop >= 1440 ? '24:00' : this.hhmm(stop);
+    st.chiusuraTxt   = this.hhmm(lim);
+    st.tolleranzaTxt = this.hhmm(lim + tol);
+    st.tolleranza    = tol;
+    st.asportoAttivo = (mins >= stop || h < 6);
+    st.bevande       = A.bevande;
+    st.fonteAsporto  = A.sigla;  st.fattAsporto  = A.fattAsporto;
+    st.fonteChiusura = C.sigla;  st.fattChiusura = C.fattChiusura(giorno);
+    var dopo = tol ? ', poi ' + tol + ' minuti solo per pulizia e ricovero attrezzature.' : ', senza tolleranza.';
+
+    if (tol ? norm > T : norm >= L){
       st.fase='fuori-orario'; st.livello='red'; st.icona='✕';
       st.titolo='FUORI ORARIO';
-      st.dettaglio='Tolleranza superata. Attività da verificare immediatamente: chiusura prevista alle '+st.chiusuraTxt+'.';
+      st.dettaglio=(tol ? 'Tolleranza superata.' : 'Orario di chiusura superato, nessuna tolleranza.') + ' Attività da verificare immediatamente: chiusura prevista alle '+st.chiusuraTxt+' (' + C.sigla + ').';
     } else if (norm >= L){
       st.fase='tolleranza'; st.livello='amber'; st.icona='⚠';
       st.titolo='SOLO PULIZIE';
@@ -827,22 +933,23 @@ window.OS = {
     } else if (norm >= L - this.preavviso){
       st.fase='preavviso-chiusura'; st.livello='amber'; st.icona='⏰';
       st.titolo='CHIUSURA TRA '+(L-norm)+' MIN';
-      st.dettaglio='Chiusura prevista alle '+st.chiusuraTxt+'. Divieto di asporto già in vigore.';
+      st.dettaglio='Chiusura prevista alle '+st.chiusuraTxt+dopo.replace(/\.$/, '')+'. Divieto di asporto già in vigore.';
     } else if (st.asportoAttivo){
       st.fase='stop-asporto'; st.livello='red'; st.icona='🚫';
       st.titolo='STOP ASPORTO';
-      st.dettaglio='Divieto di consegna per asporto di bevande in vigore. Chiusura alle '+st.chiusuraTxt+', poi 30 minuti per pulizia e ricovero attrezzature.';
-    } else if (mins >= this.asportoStop - this.preavviso){
+      st.dettaglio='Divieto di asporto di bevande '+A.bevande+' in vigore. Chiusura alle '+st.chiusuraTxt+dopo;
+    } else if (mins >= stop - this.preavviso){
       st.fase='preavviso-asporto'; st.livello='amber'; st.icona='⚠';
-      st.titolo='ASPORTO TRA '+(this.asportoStop-mins)+' MIN';
-      st.dettaglio='Il divieto di asporto entra in vigore alle '+this.hhmm(this.asportoStop)+'. Chiusura alle '+st.chiusuraTxt+'.';
+      st.titolo='ASPORTO TRA '+(stop-mins)+' MIN';
+      st.dettaglio='Il divieto di asporto di bevande '+A.bevande+' entra in vigore alle '+st.asportoTxt+'. Chiusura alle '+st.chiusuraTxt+'.';
     } else {
       st.fase='ordinaria'; st.livello='green'; st.icona='✓';
       st.titolo='FASCIA ORDINARIA';
-      st.dettaglio='Stop asporto dalle '+this.hhmm(this.asportoStop)+'. Chiusura alle '+st.chiusuraTxt+'.';
+      st.dettaglio='Stop asporto ('+A.bevande+') dalle '+st.asportoTxt+'. Chiusura alle '+st.chiusuraTxt+dopo.replace(/\.$/, '')+'.';
     }
-    var diff = new Date(this.vigenzaAl) - now;
-    st.giorniResidui = diff > 0 ? Math.ceil(diff/86400000) : 0;
+    st.giorniResidui = Math.min.apply(null, R.regimi.map(function(r){
+      return Math.max(0, Math.ceil((new Date(r.vigenzaAl) - now)/86400000));
+    }));
     return st;
   }
 };
@@ -898,34 +1005,6 @@ window.TURNO = {
 
 window.TURNO.migra();window.TURNO.migra();
 
-/* ── O.S. n. 25 del 13/10/2026 — orari movida (art. 50 c. 7 TUEL) ───────
-   Si affianca alla O.S. 872/2026, non la sostituisce: in Piazza Bellini
-   resta il regime più restrittivo della 872 (art. 9 L. 447/95). La 25
-   vale per tutte le aree omogenee elencate sotto, senza tolleranza.   */
-window.OS25 = {
-  sigla:      'O.S. 25/2026',
-  estremi:    'Ordinanza Sindacale n. 25 del 13/10/2026',
-  vigenzaDal: '2026-10-16T00:00:00',
-  vigenzaAl:  '2026-11-16T23:59:59',
-  asportoStop: 0,                  // 24:00 — divieto asporto bevande alcoliche
-  asportoFine: 6*60,               // 06:00
-  chiusura: [60, 60, 60, 60, 60, 120, 180],  // dom…sab: 01:00 · ven 02:00 · sab 03:00
-  tolleranza: 0,                   // nessuna: il riordino va fatto entro l'orario
-  areeSanLorenzo: ['Via Bellini', 'Via Carlo Doria', 'Via Micco Spadaro', 'Centro Storico Antico (planimetria 3)'],
-  stato: function(now){
-    now = now || new Date();
-    var h = now.getHours();
-    var giorno = (h < 6) ? (now.getDay()+6)%7 : now.getDay();
-    var t = now.getTime();
-    return {
-      vigente:  t >= new Date(this.vigenzaDal).getTime() && t <= new Date(this.vigenzaAl).getTime(),
-      futura:   t <  new Date(this.vigenzaDal).getTime(),
-      chiusuraTxt: OS.hhmm(this.chiusura[giorno]),
-      asportoAttivo: h < 6
-    };
-  }
-};
-
 /* ── Bot Telegram dell'ufficio ─────────────────────────────────────────
    Titoli e autorizzazioni delle attività si consultano sul bot.
    Unico punto da toccare: lo username, senza la @.                    */
@@ -966,7 +1045,11 @@ document.addEventListener('DOMContentLoaded', function(){
 <div class="page active" id="page-home">
 
   <div class="pro-hero">
-    <div class="pro-eyebrow">O.S. 872/2026 · Piazza Bellini · vigente fino al 29 novembre 2026<br>O.S. 25/2026 · movida · Via Bellini, Via Carlo Doria, Via Micco Spadaro · 16 ottobre – 16 novembre 2026</div>
+    <label class="zona-pick" for="zona-sel">
+      <span class="zona-k">📍 Dove sei</span>
+      <select id="zona-sel" onchange="OS.setZona(this.value)"></select>
+    </label>
+    <div class="zona-regimi" id="zona-regimi"></div>
     <div class="pro-title">Centro operativo</div>
     <div class="pro-sub">Cosa vale adesso, cosa hai già controllato, e il passaggio diretto a verbale o relazione.</div>
     <div class="pro-status">
@@ -1022,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <label class="pro-label" for="pro-case">Cosa hai riscontrato?</label>
     <select id="pro-case" class="pro-select" onchange="proGuide()">
       <option value="">— Seleziona il fatto —</option>
-      <option value="asporto">Asporto di bevande dopo le 22:30</option>
+      <option value="asporto">Asporto di bevande oltre l'orario</option>
       <option value="chiusura">Locale aperto oltre l'orario di chiusura</option>
       <option value="min16">Somministrazione di alcol a minore di 16 anni</option>
       <option value="min18">Vendita/somministrazione alcol a minore 16–18 anni</option>
@@ -3825,6 +3908,12 @@ function safeOpen(name){
     if(!box)return;
     if(!key||!guide[key]){box.style.display='none';box.innerHTML='';return;}
     var g=guide[key];
+    if(key==='asporto'||key==='chiusura'){
+      var st=OS.stato(); g=Object.assign({},g);
+      if(st.nessuna){ g.title=st.zona.nome; g.text=st.dettaglio; g.meta='Nessuna fattispecie di ordinanza applicabile in questa strada'; }
+      else if(key==='asporto'){ g.title=st.fonteAsporto+' — asporto'; g.text='Verifica consegna di bevande '+st.bevande+' per asporto dopo le '+st.asportoTxt+' in '+st.zona.nome+'.'; g.meta='Divieto '+st.asportoTxt+' – 06:00'; }
+      else { g.title=st.fonteChiusura+' — chiusura'; g.text='Stasera in '+st.zona.nome+' la chiusura è alle '+st.chiusuraTxt+(st.tolleranza?', con '+st.tolleranza+' minuti solo per pulizia e ricovero attrezzature.':', senza tolleranza.'); g.meta='Fattispecie proposta in base al giorno'; }
+    }
     box.style.display='block';
     box.innerHTML='<div class="pro-result-title">'+g.title+'</div><div>'+g.text+'</div><div class="pro-result-meta">'+g.meta+'</div><button class="pro-go" onclick="proGuideGo(\''+key+'\')">Apri percorso →</button>';
   };
@@ -3836,10 +3925,9 @@ function safeOpen(name){
       if(g.tab==='generatore' && g.preset){
         var sel=document.getElementById('gv-sel');
         if(sel){
-          var preset=g.preset;
-          if(preset==='AUTO_CLOSE'){
-            preset=OS.stato().weekend?'os_apertura_festivo':'os_apertura_feriale';
-          }
+          var preset=g.preset, st=OS.stato();
+          if(key==='asporto') preset=st.nessuna?'':st.fattAsporto;
+          if(preset==='AUTO_CLOSE') preset=st.nessuna?'':st.fattChiusura;
           sel.value=preset;
           if(typeof gvOnChange==='function')gvOnChange();
         }
@@ -3945,17 +4033,39 @@ function safeOpen(name){
   function renderStato(){
     var st = OS.stato();
 
-    var c25 = $('chip-os25');
-    if (c25 && window.OS25){
-      var s25 = OS25.stato();
-      if (s25.futura){ c25.className='chip warn'; c25.textContent='📅 O.S. 25 dal 16 ott'; }
-      else if (s25.vigente){ c25.className='chip active'; c25.textContent='✔ O.S. 25 · chiusura '+s25.chiusuraTxt+(s25.asportoAttivo?' · stop alcol asporto':''); }
+    var c25 = $('chip-os25'), r25 = REGIMI.os25, adesso = new Date();
+    if (c25){
+      if (adesso < new Date(r25.vigenzaDal)){ c25.className='chip warn'; c25.textContent='📅 O.S. 25 dal 16 ott'; }
+      else if (OS.vigente(r25, adesso)){ c25.className='chip active'; c25.textContent='✔ O.S. 25 · 16 ott – 16 nov'; }
       else { c25.className='chip danger'; c25.textContent='🔴 O.S. 25 scaduta'; }
+    }
+
+    var zs = $('zona-sel');
+    if (zs){
+      if (!zs.options.length){
+        var gruppi = {}, ordine = [];
+        ZONE.forEach(function(z){ if (!gruppi[z.gruppo]){ gruppi[z.gruppo] = []; ordine.push(z.gruppo); } gruppi[z.gruppo].push(z); });
+        zs.innerHTML = ordine.map(function(g){
+          return '<optgroup label="' + g + '">' + gruppi[g].map(function(z){
+            return '<option value="' + z.id + '">' + z.nome.replace(/</g,'&lt;') + '</option>'; }).join('') + '</optgroup>';
+        }).join('');
+      }
+      zs.value = st.zona.id;
+    }
+    var zr = $('zona-regimi');
+    if (zr){
+      var badge = st.regimi.map(function(r){
+        return '<span class="zona-reg" style="color:'+r.colore+';border-color:'+r.colore+'">✔ '+r.sigla+' · fino al '+OS.ddmm(r.vigenzaAl)+'</span>';
+      }).concat(st.prossimi.map(function(r){
+        return '<span class="zona-reg off">'+r.sigla+' · dal '+OS.ddmm(r.vigenzaDal)+'</span>';
+      }));
+      zr.innerHTML = badge.length ? badge.join('') : '<span class="zona-reg off">Nessuna ordinanza sugli orari</span>';
     }
 
     var cd = $('chip-countdown');
     if (cd){
-      if (!st.giorniResidui){ cd.className='chip danger'; cd.textContent='🔴 Ordinanza scaduta'; }
+      if (st.nessuna){ cd.className='chip'; cd.textContent='— Nessuna ordinanza qui'; }
+      else if (!st.giorniResidui){ cd.className='chip danger'; cd.textContent='🔴 Ordinanza scaduta'; }
       else {
         cd.textContent = '⏳ ' + st.giorniResidui + ' giorni alla scadenza';
         cd.className = 'chip ' + (st.giorniResidui > 14 ? 'active' : st.giorniResidui > 5 ? 'warn' : 'danger');
@@ -3980,7 +4090,7 @@ function safeOpen(name){
 
     var e;
     if ((e = $('pro-clock')))   e.textContent = st.ora;
-    if ((e = $('pro-asporto'))){ e.textContent = st.asportoAttivo ? 'STOP' : OS.hhmm(OS.asportoStop);
+    if ((e = $('pro-asporto'))){ e.textContent = st.asportoAttivo ? 'STOP' : st.asportoTxt;
                                  e.style.color = st.asportoAttivo ? 'var(--red)' : 'var(--text)'; }
     if ((e = $('pro-close')))   e.textContent = st.chiusuraTxt;
 
@@ -4627,17 +4737,18 @@ function proposte(){
     out.push({ id:id, p:peso, why:why, et:cat[id].et, gr:cat[id].gr });
   }
 
-  if (f){
+  if (f && !f.nessuna){
     if (oss.asporto && f.asportoAttivo)
-      agg('os_asporto', 100, 'Sono le ' + f.ora + ': il divieto di asporto è in vigore (22:30 – 06:00).');
+      agg(f.fattAsporto, 100, 'Sono le ' + f.ora + ' in ' + f.zona.nome + ': il divieto di asporto è in vigore (' + f.asportoTxt + ' – 06:00, ' + f.fonteAsporto + ').');
     if (oss.esercizio && f.fase === 'fuori-orario')
-      agg(f.weekend ? 'os_apertura_festivo' : 'os_apertura_feriale', 99,
-          'Tolleranza superata: chiusura prevista alle ' + f.chiusuraTxt + ', termine alle ' + f.tolleranzaTxt + '.');
+      agg(f.fattChiusura, 99, f.tolleranza
+          ? 'Tolleranza superata: chiusura prevista alle ' + f.chiusuraTxt + ', termine alle ' + f.tolleranzaTxt + '.'
+          : 'Chiusura prevista alle ' + f.chiusuraTxt + ' (' + f.fonteChiusura + '), senza tolleranza.');
     if (oss.esercizio && f.fase === 'tolleranza')
-      agg(f.weekend ? 'os_apertura_festivo' : 'os_apertura_feriale', 86,
+      agg(f.fattChiusura, 86,
           'Siamo nella tolleranza fino alle ' + f.tolleranzaTxt + ': copre solo pulizia e ricovero, non l\'esercizio.');
     if (oss.bicchieri && f.asportoAttivo)
-      agg('os_asporto', 94, 'Consumazione fuori dal locale con il divieto di asporto già in vigore.');
+      agg(f.fattAsporto, 94, 'Consumazione fuori dal locale con il divieto di asporto già in vigore.');
   }
 
   CONDIZIONALI.forEach(function(c){
@@ -4835,9 +4946,9 @@ window.cgLocale = function(){
 };
 
 /* ══════ 3 · AUTOTEST DEL MOTORE ORARIO ══════════════════════════════
-   Confronta OS.stato con la tabella attesa su tutte le 336 mezz'ore della
+   Confronta OS.stato con la tabella attesa, ogni 15 minuti per tutta la
    settimana. In silenzio se coincidono. Serve alla prossima ordinanza:
-   si cambiano i valori in OS e si vede subito se la logica regge ancora. */
+   si aggiunge il regime in REGIMI e un campione in CAMPIONI e si vede subito se la logica regge ancora. */
 /* Convenzione sull'ultimo minuto della tolleranza.
    true  = alle 01:30 in punto la tolleranza vale ancora (comportamento attuale del
            prontuario, e il piu' prudente in contestazione)
@@ -4846,19 +4957,20 @@ window.cgLocale = function(){
    non la segue, lo dice subito. */
 var TOLLERANZA_INCLUSIVA = true;
 
-function atteso(giornoCal, min){
-  var O = window.OS;
-  var notte = min < O.asportoFine;
+function atteso(R, giornoCal, min){
+  var notte = min < window.OS.asportoFine;
   var gc = notte ? (giornoCal + 6) % 7 : giornoCal;
-  var lim = (gc === 5 || gc === 6) ? O.chiusuraWknd : O.chiusuraFer;
-  var fine = lim + O.tolleranza;
+  var lim = R.chiusura[gc];
+  var fine = lim + R.tolleranza;
   if (notte){
     if (min < lim) return 'aperta';
-    if (TOLLERANZA_INCLUSIVA ? (min <= fine) : (min < fine)) return 'tolleranza';
+    if (R.tolleranza && (TOLLERANZA_INCLUSIVA ? (min <= fine) : (min < fine))) return 'tolleranza';
     return 'chiusa';
   }
-  return min < O.asportoStop ? 'ordinaria' : 'aperta';
+  return min < R.asportoStop ? 'ordinaria' : 'aperta';
 }
+/* una strada campione per ogni regime */
+var CAMPIONI = [['os872', 'bellini'], ['os25', 'viabellini']];
 var MAPPA = {
   'ordinaria':'ordinaria', 'preavviso-asporto':'ordinaria',
   'stop-asporto':'aperta',  'preavviso-chiusura':'aperta',
@@ -4867,13 +4979,16 @@ var MAPPA = {
 function autotest(){
   if (!window.OS || !window.OS.stato) return null;
   var diff = [], d, m;
-  /* 1 nov 2026 è una domenica: settimana intera dentro la vigenza */
-  for (d = 0; d < 7; d++) for (m = 0; m < 1440; m += 30){
-    var dt = new Date(2026, 10, 1 + d, Math.floor(m/60), m % 60);
-    var st = window.OS.stato(dt);
-    var a = atteso(dt.getDay(), m), b = MAPPA[st.fase];
-    if (a !== b) diff.push({ g:dt.getDay(), m:m, atteso:a, dato:st.fase });
-  }
+  /* 1 nov 2026 è una domenica: settimana intera dentro la vigenza di entrambe */
+  CAMPIONI.forEach(function(c){
+    var R = window.REGIMI[c[0]];
+    for (d = 0; d < 7; d++) for (m = 0; m < 1440; m += 15){
+      var dt = new Date(2026, 10, 1 + d, Math.floor(m/60), m % 60);
+      var st = window.OS.stato(dt, c[1]);
+      var a = atteso(R, dt.getDay(), m), b = MAPPA[st.fase];
+      if (a !== b) diff.push({ r:R.sigla, g:dt.getDay(), m:m, atteso:a, dato:st.fase });
+    }
+  });
   return diff;
 }
 function mostraAutotest(diff){
@@ -4884,8 +4999,8 @@ function mostraAutotest(diff){
   el.id = 'cg-autotest';
   el.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#3d1416;border-top:2px solid #e74c3c;' +
     'color:#ffd7d5;padding:10px 14px;font-size:11.5px;line-height:1.5;font-family:\'IBM Plex Sans\',sans-serif;';
-  el.innerHTML = '<b style="color:#ff7b72;">Motore orario — ' + diff.length + ' divergenze su 336</b> · ' +
-    diff.slice(0,6).map(function(x){ return G[x.g] + ' ' + hh(x.m) + ' (' + x.dato + ' invece di ' + x.atteso + ')'; }).join(' · ') +
+  el.innerHTML = '<b style="color:#ff7b72;">Motore orario — ' + diff.length + ' divergenze</b> · ' +
+    diff.slice(0,6).map(function(x){ return x.r + ' ' + G[x.g] + ' ' + hh(x.m) + ' (' + x.dato + ' invece di ' + x.atteso + ')'; }).join(' · ') +
     (diff.length > 6 ? ' · …' : '') +
     ' <button type="button" onclick="this.parentNode.remove()" style="float:right;background:none;border:1px solid #e74c3c;color:#ffd7d5;border-radius:6px;padding:2px 9px;cursor:pointer;font-family:inherit;font-size:11px;">chiudi</button>';
   document.body.appendChild(el);
@@ -4893,7 +5008,7 @@ function mostraAutotest(diff){
 window.cgAutotest = function(){
   var d = autotest();
   if (!d) return 'motore orario non raggiungibile';
-  if (!d.length) return 'motore orario: 336/336 come atteso';
+  if (!d.length) return 'motore orario: tutte le verifiche come atteso';
   mostraAutotest(d);
   return d;
 };

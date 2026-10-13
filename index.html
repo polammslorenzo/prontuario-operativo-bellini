@@ -5138,10 +5138,7 @@ else setTimeout(avvia, 120);
       + '<div class="ana2">' + rigo('Partita IVA', a.p_iva, 1) + rigo('Sede legale', a.sede_legale) + '</div>';
     if(a.titolare){
       h += '<div class="anaS">Legale rappresentante</div>' + rigo('Cognome e nome', a.titolare);
-      if(a.codice_fiscale) h += rigo('Codice fiscale', a.codice_fiscale, 1);
-      var nat = [a.nato_a, a.nato_prov ? '('+a.nato_prov+')' : '', a.nato_il ? 'il '+itaData(a.nato_il) : ''].filter(Boolean).join(' ');
-      var res = [a.res_comune, [a.res_indirizzo, a.res_civico].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-      h += '<div class="ana2">' + rigo('Nato/a', nat) + rigo('Residenza', res) + '</div>';
+      h += '<div style="font-size:12px;color:var(--muted);margin:-4px 0 12px">Codice fiscale, nascita, residenza e documento: <a href="'+esc(TG_BOT.link())+'" target="_blank" rel="noopener" style="color:#2aabee">sul bot Telegram</a>.</div>';
     }
     h += '<div class="anaS">Titoli</div>'
       + '<a class="tg-bot" href="'+esc(TG_BOT.link())+'" target="_blank" rel="noopener">'

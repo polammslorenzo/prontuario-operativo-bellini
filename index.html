@@ -637,6 +637,22 @@ body{padding-bottom:82px}
 .ultra-live.amber .ultra-live-main{color:var(--accent)}
 .ultra-live.green{border-color:rgba(53,201,121,.42)}
 .ultra-live.grey{border-color:var(--border)}
+.reg-sez{margin-bottom:22px}
+#piede-regimi{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px}
+.reg-piede{display:inline-block;border:1px solid;border-radius:5px;padding:4px 10px;font:700 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase}
+.reg-sez + .reg-sez{padding-top:18px;border-top:1px dashed var(--border)}
+.reg-head{border-left:4px solid;padding:2px 0 2px 11px;margin:4px 0 12px}
+.reg-sigla{font:800 15px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:.5px}
+.reg-estremi{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.reg-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.reg-tag{font:700 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:.8px;text-transform:uppercase;border:1px solid;border-radius:6px;padding:2px 7px}
+.reg-tag.off{color:var(--muted);border-color:var(--border)}
+.reg-tag.qui{color:var(--text);border-color:var(--text)}
+.reg-stop{background:rgba(231,76,60,0.08);border:2px solid var(--red);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+.reg-stop-ic{font-size:30px;flex-shrink:0}
+.reg-k{font:700 10px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.reg-stop-ora{font:700 40px 'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;color:var(--red);line-height:1}
+.reg-stop-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .header{position:sticky;top:0;z-index:7000}
 .header .header-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .hdr-ico{font-size:26px;line-height:1;flex-shrink:0}
@@ -776,6 +792,7 @@ body{padding-bottom:82px}
 <!-- Ordinanze e strade (unico file da toccare alla prossima ordinanza) e motore orario -->
 <script src="dati/ordinanze.js"></script>
 <script src="js/motore.js"></script>
+<script src="js/pagine.js"></script>
 <script>
 /* ── Archivio unico del turno ──────────────────────────────────────────
    Prima esistevano due archivi paralleli (taccuino home e modale
@@ -937,26 +954,8 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="print-btn" onclick="stampaPagina('orari')">🖨️ Stampa</button>
     <button class="print-btn pdf-btn" onclick="salvaPDF('orari')">📄 Salva PDF</button>
   </div>
-  <div style="background:rgba(231,76,60,0.08);border:2px solid var(--red);border-radius:12px;padding:18px 16px;margin-bottom:14px;display:flex;align-items:center;gap:16px;">
-    <div class="warn-fade" style="font-size:32px;flex-shrink:0;">🚫</div>
-    <div style="flex:1;">
-      <div style="font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;">Stop vendita/somministrazione per asporto</div>
-      <div style="font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:42px;font-weight:700;color:var(--red);line-height:1;">22:30</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Tutti i giorni — bevande alcoliche e analcoliche</div>
-    </div>
-  </div>
-
-  <div class="section-label">Orari di chiusura</div>
-  <div class="card">
-    <table class="orario-table">
-      <thead><tr><th>Giorni</th><th>Chiusura</th><th>Tolleranza</th></tr></thead>
-      <tbody>
-        <tr><td>Dom – Gio</td><td><span class="time-big">01:00</span></td><td style="font-size:12px;"><span style="color:var(--accent);font-weight:700;">+30 min</span><br><span style="color:var(--accent);font-style:italic;font-size:11px;">solo pulizie</span></td></tr>
-        <tr><td>Ven – Sab</td><td><span class="time-big">02:00</span></td><td style="font-size:12px;"><span style="color:var(--accent);font-weight:700;">+30 min</span><br><span style="color:var(--accent);font-style:italic;font-size:11px;">solo pulizie</span></td></tr>
-        <tr><td>Tutti i giorni</td><td><span class="time-green">NON prima 06:00</span></td><td style="font-size:12px;"><strong style="color:#2ecc71;">Riapertura</strong></td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- una sezione per ordinanza, generata da dati/ordinanze.js (js/pagine.js) -->
+  <div id="orari-regimi"></div>
 
   <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(245,166,35,0.07);border:1px solid rgba(245,166,35,0.3);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
     <div style="font-size:20px;flex-shrink:0;margin-top:1px;">📅</div>
@@ -965,32 +964,6 @@ document.addEventListener('DOMContentLoaded', function(){
       <div style="font-size:12.5px;line-height:1.6;color:var(--text);">Gli orari si riferiscono alla <strong>giornata lavorativa di inizio turno</strong>. La chiusura alle <strong>02:00 Ven/Sab</strong> significa che il locale che apre la sera del venerdì chiude alle 02:00 della notte seguente (sabato mattina). Lo stesso vale per Dom/Gio con chiusura alle <strong>01:00</strong>.</div>
       <div style="margin-top:8px;background:rgba(245,166,35,0.1);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--accent);font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-weight:600;letter-spacing:0.5px;">📌 Es. — Locale apre venerdì sera → chiude sabato alle 02:00</div>
     </div>
-  </div>
-
-  <div class="alert green">
-    <div class="alert-title">ℹ Tolleranza +30 minuti</div>
-    <p>I 30 minuti extra sono consentiti <strong>esclusivamente</strong> per il ricovero delle attrezzature e la pulizia degli spazi. Non è ammessa prosecuzione dell'attività commerciale.</p>
-  </div>
-
-  <div class="section-label">O.S. 25/2026 — Orari movida · dal 16/10 al 16/11/2026</div>
-  <div class="alert orange">
-    <div class="alert-title">📍 Dove si applica</div>
-    <p>Esercizi di somministrazione, di vicinato, attività artigianali con preparazione di alimenti/bevande per asporto e distributori automatici. Per la U.O. San Lorenzo: <strong>Via Bellini, Via Carlo Doria, Via Micco Spadaro</strong> e il <strong>Centro Storico Antico</strong> (planimetria 3). In Piazza Bellini resta il regime più restrittivo della O.S. 872/2026.</p>
-  </div>
-  <div class="card">
-    <table class="orario-table">
-      <thead><tr><th>Giorni</th><th>Chiusura</th><th>Tolleranza</th></tr></thead>
-      <tbody>
-        <tr><td>Asporto alcolici</td><td><span class="time-big" style="color:var(--red);">24:00</span></td><td style="font-size:12px;">vietato fino alle 06:00</td></tr>
-        <tr><td>Dom – Gio</td><td><span class="time-big">01:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
-        <tr><td>Venerdì</td><td><span class="time-big">02:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
-        <tr><td>Sabato</td><td><span class="time-big">03:00</span></td><td style="font-size:12px;"><strong style="color:var(--red);">nessuna</strong></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="alert orange">
-    <div class="alert-title">⚠ Nessuna tolleranza</div>
-    <p>La O.S. 25/2026 non prevede i 30 minuti per riordino e pulizia: devono concludersi <strong>entro</strong> l'orario di chiusura.</p>
   </div>
 </div>
 
@@ -1004,11 +977,8 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="print-btn pdf-btn" onclick="salvaPDF('divieti')">📄 Salva PDF</button>
   </div>
 
-  <div class="section-label">Divieto asporto bevande</div>
-  <div class="alert orange">
-    <div class="alert-title">🚫 Vietato — Tutte le sere</div>
-    <p>Vendita e somministrazione per asporto di <strong>bevande alcoliche e analcoliche</strong> dalle <strong>22:30</strong> alle <strong>06:00</strong> del giorno successivo — tutti i giorni della settimana.</p>
-  </div>
+  <!-- una sezione per ordinanza, generata da dati/ordinanze.js (js/pagine.js) -->
+  <div id="divieti-regimi"></div>
 
   <div class="section-label">Definizione "asporto"</div>
   <div class="card">
@@ -1024,11 +994,6 @@ document.addEventListener('DOMContentLoaded', function(){
     </div>
   </div>
 
-  <div class="section-label">O.S. 25/2026 — Divieto asporto alcolici</div>
-  <div class="alert orange">
-    <div class="alert-title">🚫 Vietato — dal 16/10 al 16/11/2026</div>
-    <p>Vendita e somministrazione per asporto di <strong>bevande alcoliche</strong> dalle <strong>24:00</strong> alle <strong>06:00</strong> del giorno seguente, tutti i giorni, in <strong>Via Bellini, Via Carlo Doria, Via Micco Spadaro</strong> e nel Centro Storico Antico (planimetria 3). Riguarda anche esercizi di vicinato, artigiani e distributori automatici.</p>
-  </div>
 </div>
 
 
@@ -1041,73 +1006,8 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="print-btn pdf-btn" onclick="salvaPDF('sanzioni')">📄 Salva PDF</button>
   </div>
 
-  <div class="norma-badge">⚖️ Art. 9 L. 447/95 in rel. O.S. 872/2026</div>
-  <div class="section-label">Sanzioni applicabili</div>
-  <div class="card">
-    <div class="sanzione-row">
-      <div class="sanzione-icon">💰</div>
-      <div>
-        <div class="sanzione-label">Sanzione amministrativa</div>
-        <div class="sanzione-value">€ 2.000 – € 20.000</div>
-        <div class="pmr-badge">PMR € 4.000 (doppio del minimo)</div>
-      </div>
-    </div>
-    <div class="sanzione-row">
-      <div class="sanzione-icon">🔒</div>
-      <div>
-        <div class="sanzione-label">Reiterazione — Sospensione attività</div>
-        <div class="sanzione-value" style="color:var(--accent2);">1 – 30 giorni</div>
-        <div class="sanzione-desc">Segnalazione ai sensi dell'<strong>art. 10 TULPS</strong></div>
-      </div>
-    </div>
-    <div class="sanzione-row">
-      <div class="sanzione-icon">⚖️</div>
-      <div>
-        <div class="sanzione-label">Inottemperanza al provvedimento</div>
-        <div class="sanzione-value">Art. 650 c.p.</div>
-        <div class="sanzione-desc">Si procede penalmente se il soggetto non ottempera.</div>
-      </div>
-    </div>
-  </div>
-  <div class="section-label">Note normative</div>
-  <div class="card">
-    <details><summary>Art. 9 L. 447/1995</summary><p>Legge quadro sull'inquinamento acustico. Conferisce al Sindaco il potere di adottare ordinanze contingibili e urgenti. Fonte della sanzione da € 2.000 a € 20.000.</p></details>
-    <details><summary>Art. 10 TULPS</summary><p>Testo Unico delle Leggi di Pubblica Sicurezza. Consente la sospensione dell'attività in caso di reiterazione delle violazioni.</p></details>
-    <details><summary>Art. 650 c.p.</summary><p>Inosservanza dei provvedimenti dell'Autorità. Reato contravvenzionale: arresto fino a 3 mesi o ammenda fino a 206 euro.</p></details>
-  </div>
-
-  <div class="norma-badge" style="margin-top:18px;">⚖️ Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026</div>
-  <div class="section-label">Sanzioni O.S. 25/2026 — orari movida</div>
-  <div class="card">
-    <div class="sanzione-row">
-      <div class="sanzione-icon">💰</div>
-      <div>
-        <div class="sanzione-label">Sanzione amministrativa</div>
-        <div class="sanzione-value">€ 25 – € 500</div>
-        <div class="pmr-badge">PMR € 50 (doppio del minimo, L. 689/81)</div>
-      </div>
-    </div>
-    <div class="sanzione-row">
-      <div class="sanzione-icon">🔒</div>
-      <div>
-        <div class="sanzione-label">Reiterazione — Sospensione, poi revoca</div>
-        <div class="sanzione-value" style="color:var(--accent2);">1 – 30 giorni</div>
-        <div class="sanzione-desc">Sospensione ai sensi dell'<strong>art. 10 TULPS</strong>; successivamente revoca del titolo.</div>
-      </div>
-    </div>
-    <div class="sanzione-row">
-      <div class="sanzione-icon">⚖️</div>
-      <div>
-        <div class="sanzione-label">Clausola di riserva</div>
-        <div class="sanzione-value">Art. 650 c.p.</div>
-        <div class="sanzione-desc">La sanzione amministrativa si applica salvo che il fatto costituisca reato.</div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <details><summary>Art. 50 c. 7 e art. 7-bis D.Lgs. 267/2000</summary><p>Il Sindaco coordina e riorganizza gli orari degli esercizi commerciali e dei pubblici esercizi sulla base degli indirizzi del Consiglio (Delibera C.C. n. 92 del 06/07/2026). L'art. 7-bis fissa la sanzione da € 25 a € 500 per le violazioni delle ordinanze sindacali.</p></details>
-    <details><summary>Rapporto con la O.S. 872/2026</summary><p>La O.S. 25/2026 non pregiudica né assorbe le ordinanze ex art. 9 L. 447/95. Dove vale anche la 872 (Piazza Bellini) si contesta la 872, più restrittiva.</p></details>
-  </div>
+  <!-- una sezione per ordinanza, generata da dati/ordinanze.js (js/pagine.js) -->
+  <div id="sanzioni-regimi"></div>
 </div>
 
 
@@ -3073,7 +2973,7 @@ async function relGeneraPDF() {
 
     // ── O.S. 872/2026 ──────────────────────────────────────────────────
     os_asporto: {
-      norma:'Art. 9 L. 447/95 in rel. O.S. 872/2026', sanzione:'€ 2.000 – € 20.000', pmr:'€ 4.000',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp','gv-c-bev-tipo'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", poneva in essere la vendita e la somministrazione per asporto di bevande ${v.bevTipo} oltre l'orario consentito dall'Ordinanza Sindacale n. ORDSI/2026/0000872 del 29/07/2026 (limite orario: ore 22:30).
@@ -3084,7 +2984,7 @@ Si rammenta che, ai fini della predetta ordinanza, per "vendita o somministrazio
     },
 
     os_apertura_feriale: {
-      norma:'Art. 9 L. 447/95 in rel. O.S. 872/2026', sanzione:'€ 2.000 – € 20.000', pmr:'€ 4.000',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in piena attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario di chiusura fissato per il giorno in questione (domenica/giovedì) alle ore 01:00 dall'Ordinanza Sindacale n. ORDSI/2026/0000872 del 29/07/2026.
@@ -3093,7 +2993,7 @@ I trenta minuti di tolleranza previsti dalla predetta ordinanza — destinati es
     },
 
     os_apertura_festivo: {
-      norma:'Art. 9 L. 447/95 in rel. O.S. 872/2026', sanzione:'€ 2.000 – € 20.000', pmr:'€ 4.000',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in piena attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario di chiusura fissato per il giorno in questione (venerdì/sabato) alle ore 02:00 dall'Ordinanza Sindacale n. ORDSI/2026/0000872 del 29/07/2026.
@@ -3103,7 +3003,7 @@ I trenta minuti di tolleranza previsti dalla predetta ordinanza — destinati es
 
     // ── O.S. 25/2026 — orari movida (art. 50 c. 7 TUEL) ───────────────
     os25_asporto: {
-      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", poneva in essere la vendita e la somministrazione per asporto di bevande alcoliche oltre l'orario consentito dall'Ordinanza Sindacale n. 25 del 13/10/2026 (divieto dalle ore 24:00 alle ore 06:00 del giorno seguente), emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000 e vigente dal 16/10/2026 al 16/11/2026 nell'area omogenea interessata.
@@ -3112,7 +3012,7 @@ ${v.descAsporto ? 'In particolare: ' + v.descAsporto + '.' : "In particolare, ve
     },
 
     os25_chiusura_feriale: {
-      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il giorno in questione (domenica/giovedì) alle ore 01:00 dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
@@ -3121,7 +3021,7 @@ La predetta ordinanza non prevede alcuna tolleranza: le operazioni di riordino e
     },
 
     os25_chiusura_venerdi: {
-      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il venerdì alle ore 02:00 del giorno successivo dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
@@ -3130,7 +3030,7 @@ La predetta ordinanza non prevede alcuna tolleranza: le operazioni di riordino e
     },
 
     os25_chiusura_sabato: {
-      norma:'Art. 7-bis D.Lgs. 267/2000 in rel. O.S. 25/2026', sanzione:'€ 25 – € 500', pmr:'€ 50',
+      // norma, sanzione e p.m.r.: da dati/ordinanze.js
       campi:['gv-c-resp'],
       adempimenti:['Verbale di accertamento illecito amm. (mod. VV) — notifica immediata al trasgressore/responsabile'],
       genera:(v)=>`Accertavano che l'esercizio commerciale denominato "${v.esercizio}", risultava ancora aperto al pubblico e in attività — con presenza di avventori all'interno e/o nell'area esterna pertinenziale — oltre l'orario massimo di chiusura fissato per il sabato alle ore 03:00 del giorno successivo dall'Ordinanza Sindacale n. 25 del 13/10/2026, emessa ai sensi dell'art. 50, comma 7, del D.Lgs. 267/2000.
@@ -3258,6 +3158,7 @@ Dagli accertamenti esperiti risultava che la medesima violazione era già stata 
       genera:(v)=>`Presso il circolo privato denominato "${v.esercizio}", veniva accertato che il responsabile effettuava la somministrazione e la vendita di bevande alcoliche e superalcoliche nel periodo compreso tra le ore 03:00 e le ore 06:00, in violazione del divieto posto dall'art. 54 della Legge 29 luglio 2010, n. 120, indipendentemente dalla natura associativa dell'ente.`
     }
   };
+  applicaSanzioniVerbali(GV_FATT);   /* ordinanze: norma, sanzione e p.m.r. da dati/ordinanze.js */
 
     // ── helper ─────────────────────────────────────────────────────────
   function gv(id){ const e=document.getElementById(id); return e?e.value.trim():''; }
@@ -3582,7 +3483,7 @@ Ai sensi dell'art. 9, comma 2, del Regolamento Arte di Strada si disponeva altre
     © A.C. Ferrara · Prontuario Operativo v1.6 · 2026
   </div>
   <div style="font-size:11.5px;color:var(--muted);line-height:1.8;max-width:600px;margin:0 auto;">
-    <span style="display:inline-block;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:5px;padding:4px 10px;margin-bottom:8px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);">O.S. 872/2026 del 29/07/2026 · validità 29 lug – 29 nov 2026</span><br><span style="display:inline-block;background:rgba(42,171,238,0.08);border:1px solid rgba(42,171,238,0.3);border-radius:5px;padding:4px 10px;margin-bottom:8px;font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);">O.S. 25/2026 del 13/10/2026 · validità 16 ott – 16 nov 2026</span><br>
+    <span id="piede-regimi"></span><br>
     Sebbene ideato per l'O.S., può costituire <strong style="color:var(--text);">strumento operativo di riferimento</strong> anche per i servizi generali di <strong style="color:var(--text);">controllo della movida</strong>.<br><br>
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px;">
       <span style="font-family:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">L.R. Campania 7/2020</span>

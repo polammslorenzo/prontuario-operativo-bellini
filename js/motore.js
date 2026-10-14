@@ -35,7 +35,8 @@ g.OS = {
   setZona: function(id){
     this._zona = id;
     try { localStorage.setItem(this.KEY, id); } catch(e){}
-    if (window.renderStato) window.renderStato();
+    if (g.renderStato) g.renderStato();
+    if (g.renderPagine) g.renderPagine();
   },
   vigente: function(r, now){
     var t = now.getTime();
